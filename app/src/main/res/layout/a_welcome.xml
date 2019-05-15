@@ -10,21 +10,22 @@
         android:id="@+id/welcomeMessageTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dip"
-        android:layout_marginLeft="10dip"
-        android:layout_marginTop="10dip"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
         android:focusable="true"
-        android:text="WhatsApp Aplication"
-        android:textSize="28sp"/>
+        android:text="@string/whatsapp_app"
+        android:textSize="28sp" />
 
     <ImageView
         android:id="@+id/welcomeLogoImageView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/welcomeMessageTextView"
-        android:layout_marginLeft="20dip"
+        android:layout_marginStart="20dp"
         android:adjustViewBounds="true"
-        android:src="@drawable/app_logo"/>
+        android:contentDescription="@string/content_description"
+        android:src="@drawable/app_logo" />
 
     <LinearLayout
         android:id="@+id/welcomeLinearLayout"
@@ -36,20 +37,26 @@
 
         <Button
             android:id="@+id/welcomeLoginButton"
+            style="@android:style/Widget.DeviceDefault.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dip"
-            android:text="LOGIN"
-            android:textColor="@color/orange"/>
+            android:layout_marginBottom="10dp"
+            android:background="@android:drawable/btn_default"
+            android:text="@string/login_uppercase"
+            android:textColor="@color/orange"
+            android:textSize="14sp" />
 
         <Button
             android:id="@+id/welcomeRegisterButton"
+            style="@android:style/Widget.DeviceDefault.MediaRouteButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dip"
-            android:layout_marginLeft="10dip"
-            android:text="REGISTER"
-            android:textColor="@color/orange"/>
+            android:layout_marginStart="20dp"
+            android:layout_marginBottom="10dp"
+            android:background="@android:drawable/btn_default"
+            android:text="@string/register_uppercase"
+            android:textColor="@color/orange"
+            android:textSize="14sp" />
 
     </LinearLayout>
 

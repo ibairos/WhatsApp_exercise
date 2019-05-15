@@ -12,12 +12,13 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import edu.upc.whatsapp.R;
 import entity.UserInfo;
+
 import java.util.List;
 
 /**
- *
  * @author upcnet
  */
 public class MyAdapter_users extends BaseAdapter {
@@ -26,29 +27,29 @@ public class MyAdapter_users extends BaseAdapter {
     public List<UserInfo> users;
 
     public MyAdapter_users(Context context, List<UserInfo> users) {
-      this.context = context;
-      this.users = users;
+        this.context = context;
+        this.users = users;
     }
 
     public int getCount() {
-      return users.size();
+        return users.size();
     }
 
     public View getView(int position, View convertView, ViewGroup parent) {
-      if (convertView == null) {
-        convertView = LayoutInflater.from(context).inflate(R.layout.row_twotextviews, parent, false);
-      }
+        if (convertView == null) {
+            convertView = LayoutInflater.from(context).inflate(R.layout.row_twotextviews, parent, false);
+        }
 
-      //...
+        //...
 
-      return convertView;
+        return convertView;
     }
 
     public Object getItem(int arg0) {
-      return users.get(arg0);
+        return users.get(arg0);
     }
 
     public long getItemId(int arg0) {
-      return users.get(arg0).getId();
+        return users.get(arg0).getId();
     }
-  }
+}
