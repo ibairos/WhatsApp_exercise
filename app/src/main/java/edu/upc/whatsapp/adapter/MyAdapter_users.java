@@ -35,16 +35,6 @@ public class MyAdapter_users extends BaseAdapter {
         return users.size();
     }
 
-    public View getView(int position, View convertView, ViewGroup parent) {
-        if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.row_twotextviews, parent, false);
-        }
-
-        //...
-
-        return convertView;
-    }
-
     public Object getItem(int arg0) {
         return users.get(arg0);
     }
@@ -52,4 +42,19 @@ public class MyAdapter_users extends BaseAdapter {
     public long getItemId(int arg0) {
         return users.get(arg0).getId();
     }
+
+    public View getView(int position, View convertView, ViewGroup parent) {
+        if (convertView == null) {
+            convertView = LayoutInflater.from(context)
+                    .inflate(R.layout.row_twotextviews, parent, false);
+        }
+
+        ((TextView) convertView.findViewById(R.id.row_twotextviews_name))
+                .setText(((UserInfo) getItem(position)).getName());
+        ((TextView) convertView.findViewById(R.id.row_twotextviews_surname))
+                .setText(((UserInfo) getItem(position)).getSurname());
+
+        return convertView;
+    }
+
 }

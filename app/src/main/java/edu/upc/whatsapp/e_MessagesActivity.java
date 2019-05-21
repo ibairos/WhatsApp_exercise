@@ -21,6 +21,7 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Timer;
@@ -51,7 +52,8 @@ public class e_MessagesActivity extends Activity {
         title.setText("Talking with: " + globalState.user_to_talk_to.getName());
         setup_input_text();
 
-        new fetchAllMessages_Task().execute(globalState.my_user.getId(), globalState.user_to_talk_to.getId());
+        new fetchAllMessages_Task()
+                .execute(globalState.my_user.getId(), globalState.user_to_talk_to.getId());
     }
 
     @Override
@@ -80,11 +82,7 @@ public class e_MessagesActivity extends Activity {
 
         @Override
         protected List<Message> doInBackground(Integer... userIds) {
-
-            //...
-
-            //remove this sentence on completing the code:
-            return null;
+            return RPC.retrieveMessages(userIds[0], userIds[1]);
         }
 
         @Override
@@ -94,9 +92,11 @@ public class e_MessagesActivity extends Activity {
                 toastShow("There's been an error downloading the messages");
             } else {
                 toastShow(all_messages.size() + " messages downloaded");
-
-                //...
-
+                conversation = findViewById(R.id.conversation);
+                MyAdapter_messages adapter_messages = new MyAdapter_messages(
+                        getApplicationContext(), all_messages, globalState.my_user);
+                conversation.setAdapter(adapter_messages);
+                adapter_messages.notifyDataSetChanged();
             }
         }
     }
@@ -105,10 +105,8 @@ public class e_MessagesActivity extends Activity {
 
         @Override
         protected List<Message> doInBackground(Integer... userIds) {
-
-            //...
-
-            //remove this sentence on completing the code:
+            // TODO
+            //return RPC.retrieveNewMessages(userIds[0], userIds[1]);
             return null;
         }
 
@@ -127,7 +125,13 @@ public class e_MessagesActivity extends Activity {
 
     public void sendText(final View view) {
 
-        //...
+        Message m = new Message();
+        m.setContent(input_text.getText().toString());
+        m.setDate(new Date());
+        m.setUserSender(globalState.my_user);
+        m.setUserReceiver(globalState.user_to_talk_to);
+
+        RPC.postMessage(m);
 
         input_text.setText("");
 
@@ -248,5 +252,25 @@ public class e_MessagesActivity extends Activity {
         toast.setGravity(0, 0, 200);
         toast.show();
     }
+
+    private List<Message> orderMessages(List<Message> messages) {
+        ArrayList<Message> messages_ordered = new ArrayList<>();
+        for (Message m : messages) {
+            boolean placed = true;
+            for (Message mes : messages_ordered) {
+                if (m.getDate().after(mes.getDate())) {
+                    messages_ordered.add(m);
+                    placed = true;
+                    break;
+                }
+            }
+            if (!placed) {
+                messages_ordered.add(m);
+            }
+        }
+        return messages_ordered;
+    }
+
+
 
 }

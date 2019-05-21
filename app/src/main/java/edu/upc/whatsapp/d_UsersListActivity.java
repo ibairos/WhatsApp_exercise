@@ -34,18 +34,14 @@ public class d_UsersListActivity extends Activity {
 
         @Override
         protected void onPreExecute() {
-            progressDialog = ProgressDialog.show(d_UsersListActivity.this, "UsersListActivity",
+            progressDialog = ProgressDialog
+                    .show(d_UsersListActivity.this, "UsersListActivity",
                     "downloading the users...");
         }
 
         @Override
         protected List<UserInfo> doInBackground(Void... nothing) {
-
-            //...
-
-            //remove this sentence on completing the code:
-            return null;
-
+            return RPC.allUserInfos();
         }
 
         @Override
@@ -54,9 +50,10 @@ public class d_UsersListActivity extends Activity {
             if (users == null) {
                 toastShow("There's been an error downloading the users");
             } else {
-
-                //...
-
+                ListView usersListView = findViewById(R.id.listView);
+                adapter = new MyAdapter_users(getApplicationContext(), users);
+                usersListView.setAdapter(adapter);
+                adapter.notifyDataSetChanged();
             }
         }
     }

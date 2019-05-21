@@ -1,7 +1,5 @@
 package edu.upc.whatsapp;
 
-import edu.upc.whatsapp.comms.RPC;
-
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -13,9 +11,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import java.io.Serializable;
-
-import edu.upc.whatsapp.service.PushService;
+import edu.upc.whatsapp.comms.RPC;
 import entity.User;
 import entity.UserInfo;
 
@@ -36,10 +32,17 @@ public class c_RegistrationActivity extends Activity implements View.OnClickList
 
     public void onClick(View arg0) {
         if (arg0 == findViewById(R.id.editregistrationButton)) {
-
-            //...
-
             progressDialog = ProgressDialog.show(this, "RegistrationActivity", "Registering for service...");
+
+            user = new User();
+            user.setLogin(((EditText) findViewById(R.id.c_registration_LoginET)).getText().toString());
+            user.setPassword(((EditText) findViewById(R.id.c_registration_PasswordET)).getText().toString());
+            user.setEmail(((EditText) findViewById(R.id.c_registration_EmailET)).getText().toString());
+            UserInfo userInfo = new UserInfo();
+            userInfo.setName(((EditText) findViewById(R.id.c_registration_NameET)).getText().toString());
+            userInfo.setSurname(((EditText) findViewById(R.id.c_registration_SurnameET)).getText().toString());
+            user.setUserInfo(userInfo);
+
             // if there's still a running thread doing something, we don't create a new one
             if (operationPerformer == null) {
                 operationPerformer = new OperationPerformer();
@@ -55,7 +58,8 @@ public class c_RegistrationActivity extends Activity implements View.OnClickList
             Message msg = handler.obtainMessage();
             Bundle b = new Bundle();
 
-            //...
+            UserInfo userInfo = RPC.registration(user);
+            b.putSerializable("userInfo", userInfo);
 
             msg.setData(b);
             handler.sendMessage(msg);
@@ -74,9 +78,9 @@ public class c_RegistrationActivity extends Activity implements View.OnClickList
             if (userInfo.getId() >= 0) {
                 toastShow("Registration successful");
 
-                //...
+                Intent i = new Intent(getApplicationContext(), d_UsersListActivity.class);
+                startActivity(i);
 
-                finish();
             } else if (userInfo.getId() == -1) {
                 toastShow("Registration unsuccessful,\nlogin already used by another user");
             } else if (userInfo.getId() == -2) {

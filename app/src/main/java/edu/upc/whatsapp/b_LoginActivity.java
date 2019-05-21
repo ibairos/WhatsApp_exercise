@@ -37,6 +37,11 @@ public class b_LoginActivity extends Activity implements View.OnClickListener {
     public void onClick(View arg0) {
         if (arg0 == findViewById(R.id.editloginButton)) {
             progressDialog = ProgressDialog.show(this, "LoginActivity", "Logging into the server...");
+
+            user = new User();
+            user.setLogin(((EditText) findViewById(R.id.b_login_LoginET)).getText().toString());
+            user.setPassword(((EditText) findViewById(R.id.b_login_PasswordET)).getText().toString());
+
             // if there's still a running thread doing something, we don't create a new one
             if (operationPerformer == null) {
                 operationPerformer = new OperationPerformer();
@@ -52,10 +57,7 @@ public class b_LoginActivity extends Activity implements View.OnClickListener {
             Message msg = handler.obtainMessage();
             Bundle b = new Bundle();
 
-            // EditText login = findViewById(R.id.b_login_LoginET);
-            // EditText password = findViewById(R.id.b_login_PasswordET);
-
-            UserInfo userInfo = new UserInfo();
+            UserInfo userInfo = RPC.login(user);
             b.putSerializable("userInfo", userInfo);
 
             msg.setData(b);
@@ -75,9 +77,9 @@ public class b_LoginActivity extends Activity implements View.OnClickListener {
             if (userInfo.getId() >= 0) {
                 toastShow("Login successful");
 
-                //...
+                Intent i = new Intent(b_LoginActivity.this, d_UsersListActivity.class);
+                startActivity(i);
 
-                finish();
             } else if (userInfo.getId() == -1) {
                 toastShow("Login unsuccessful, try again please.");
             } else if (userInfo.getId() == -2) {
