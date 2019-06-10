@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
@@ -51,25 +52,25 @@ public class e_MessagesActivity extends Activity {
         TextView title = (TextView) findViewById(R.id.title);
         title.setText("Talking with: " + globalState.user_to_talk_to.getName());
         setup_input_text();
+        conversation = findViewById(R.id.conversation);
 
         new fetchAllMessages_Task()
-                .execute(globalState.my_user.getId(), globalState.user_to_talk_to.getId());
+                .execute(globalState.my_user.getId(),
+                        globalState.user_to_talk_to.getId());
+
+        timer = new Timer();
+        timer.schedule(new fetchNewMessagesTimerTask(), 10000, 10000);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
-        //...
-
+        // No need to ask again for the messages if we already have a timer
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-
-        //...
-
     }
 
     private class fetchAllMessages_Task extends AsyncTask<Integer, Void, List<Message>> {
@@ -92,11 +93,11 @@ public class e_MessagesActivity extends Activity {
                 toastShow("There's been an error downloading the messages");
             } else {
                 toastShow(all_messages.size() + " messages downloaded");
-                conversation = findViewById(R.id.conversation);
-                MyAdapter_messages adapter_messages = new MyAdapter_messages(
+                adapter = new MyAdapter_messages(
                         getApplicationContext(), all_messages, globalState.my_user);
-                conversation.setAdapter(adapter_messages);
-                adapter_messages.notifyDataSetChanged();
+                conversation.setAdapter(adapter);
+                adapter.notifyDataSetChanged();
+
             }
         }
     }
@@ -105,9 +106,12 @@ public class e_MessagesActivity extends Activity {
 
         @Override
         protected List<Message> doInBackground(Integer... userIds) {
-            // TODO
-            //return RPC.retrieveNewMessages(userIds[0], userIds[1]);
-            return null;
+            Message message = adapter.getLastMessage();
+            if (message != null) {
+                return RPC.retrieveNewMessages(userIds[0], userIds[1], message);
+            } else {
+                return new ArrayList<>();
+            }
         }
 
         @Override
@@ -115,10 +119,11 @@ public class e_MessagesActivity extends Activity {
             if (new_messages == null) {
                 toastShow("There's been an error downloading new messages");
             } else {
-                toastShow(new_messages.size() + " new message/s downloaded");
-
-                //...
-
+                if (new_messages.size() > 0) {
+                    toastShow(new_messages.size() + " new message/s downloaded");
+                    adapter.addMessages(new_messages);
+                    adapter.notifyDataSetChanged();
+                }
             }
         }
     }
@@ -131,7 +136,7 @@ public class e_MessagesActivity extends Activity {
         m.setUserSender(globalState.my_user);
         m.setUserReceiver(globalState.user_to_talk_to);
 
-        RPC.postMessage(m);
+        new SendMessage_Task().execute(m);
 
         input_text.setText("");
 
@@ -149,20 +154,14 @@ public class e_MessagesActivity extends Activity {
 
         @Override
         protected Message doInBackground(Message... messages) {
-
-            //...
-
-            //remove this sentence on completing the code:
-            return null;
+            return RPC.postMessage(messages[0]);
         }
 
         @Override
         protected void onPostExecute(Message message_reply) {
             if (message_reply.getId() >= 0) {
                 toastShow("message sent");
-
-                //...
-
+                adapter.addMessage(message_reply);
             } else {
                 toastShow("There's been an error sending the message");
             }
@@ -170,12 +169,10 @@ public class e_MessagesActivity extends Activity {
     }
 
     private class fetchNewMessagesTimerTask extends TimerTask {
-
         @Override
         public void run() {
-
-            //...
-
+            new fetchNewMessages_Task().execute(
+                    globalState.my_user.getId(), globalState.user_to_talk_to.getId());
         }
     }
 
@@ -252,25 +249,5 @@ public class e_MessagesActivity extends Activity {
         toast.setGravity(0, 0, 200);
         toast.show();
     }
-
-    private List<Message> orderMessages(List<Message> messages) {
-        ArrayList<Message> messages_ordered = new ArrayList<>();
-        for (Message m : messages) {
-            boolean placed = true;
-            for (Message mes : messages_ordered) {
-                if (m.getDate().after(mes.getDate())) {
-                    messages_ordered.add(m);
-                    placed = true;
-                    break;
-                }
-            }
-            if (!placed) {
-                messages_ordered.add(m);
-            }
-        }
-        return messages_ordered;
-    }
-
-
 
 }

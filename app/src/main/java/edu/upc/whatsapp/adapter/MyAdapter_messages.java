@@ -1,6 +1,7 @@
 package edu.upc.whatsapp.adapter;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,7 +57,11 @@ public class MyAdapter_messages extends BaseAdapter {
     }
 
     public Message getLastMessage() {
-        return messages.get(messages.size() - 1);
+        if (messages.size() > 0) {
+            return messages.get(messages.size() - 1);
+        } else {
+            return null;
+        }
     }
 
     public int getCount() {
@@ -77,14 +82,13 @@ public class MyAdapter_messages extends BaseAdapter {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy MMM dd");
         SimpleDateFormat sdf2 = new SimpleDateFormat("HH:mm");
         Date date = messages.get(position).getDate();
-        if (date_visibility.get(position) == View.VISIBLE)
+        if (date_visibility.get(position) == View.VISIBLE) {
             convertView.findViewById(R.id.row_date).setVisibility(View.VISIBLE);
-        else
+        } else {
             convertView.findViewById(R.id.row_date).setVisibility(View.GONE);
+        }
         ((TextView) convertView.findViewById(R.id.row_date)).setText(sdf.format(date));
-
-        //...
-
+        ((TextView) convertView.findViewById(R.id.row_content)).setText(messages.get(position).getContent());
         ((TextView) convertView.findViewById(R.id.row_hour)).setText(sdf2.format(date));
 
         return convertView;
@@ -100,16 +104,16 @@ public class MyAdapter_messages extends BaseAdapter {
 
     @Override
     public int getItemViewType(int position) {
-
-        //...
-
-        //remove this sentence on completing the code:
-        return -1;
+        if (((Message) getItem(position)).getUserSender().equals(my_user)) {
+            return 0;
+        } else {
+            return 1;
+        }
     }
 
     @Override
     public int getViewTypeCount() {
-        return 2; // Count of different layouts
+        return 2;
     }
 
     @Override

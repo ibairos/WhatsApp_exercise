@@ -58,6 +58,8 @@ public class b_LoginActivity extends Activity implements View.OnClickListener {
             Bundle b = new Bundle();
 
             UserInfo userInfo = RPC.login(user);
+            globalState.my_user = userInfo;
+
             b.putSerializable("userInfo", userInfo);
 
             msg.setData(b);

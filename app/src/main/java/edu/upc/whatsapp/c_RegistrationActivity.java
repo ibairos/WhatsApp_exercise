@@ -59,8 +59,9 @@ public class c_RegistrationActivity extends Activity implements View.OnClickList
             Bundle b = new Bundle();
 
             UserInfo userInfo = RPC.registration(user);
-            b.putSerializable("userInfo", userInfo);
+            globalState.my_user = userInfo;
 
+            b.putSerializable("userInfo", userInfo);
             msg.setData(b);
             handler.sendMessage(msg);
         }

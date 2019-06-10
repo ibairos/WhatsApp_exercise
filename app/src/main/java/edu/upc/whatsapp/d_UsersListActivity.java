@@ -51,8 +51,9 @@ public class d_UsersListActivity extends Activity {
                 toastShow("There's been an error downloading the users");
             } else {
                 ListView usersListView = findViewById(R.id.listView);
-                adapter = new MyAdapter_users(getApplicationContext(), users);
+                adapter = new MyAdapter_users(getApplicationContext(), users, globalState);
                 usersListView.setAdapter(adapter);
+                usersListView.setOnItemClickListener(adapter);
                 adapter.notifyDataSetChanged();
             }
         }
