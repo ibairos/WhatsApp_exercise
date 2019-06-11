@@ -22,15 +22,30 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+
+import org.glassfish.tyrus.client.ClientManager;
+
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.websocket.ClientEndpointConfig;
+import javax.websocket.CloseReason;
+import javax.websocket.Endpoint;
+import javax.websocket.EndpointConfig;
+import javax.websocket.MessageHandler;
+import javax.websocket.Session;
+
 import edu.upc.whatsapp.comms.RPC;
 import edu.upc.whatsapp.adapter.MyAdapter_messages;
 import entity.Message;
+
+import static edu.upc.whatsapp.comms.Comms.ENDPOINT;
+import static edu.upc.whatsapp.comms.Comms.gson;
 
 public class e_MessagesActivity extends Activity {
 
@@ -41,8 +56,6 @@ public class e_MessagesActivity extends Activity {
     private EditText input_text;
     private Button button;
     private boolean enlarged = false, shrunk = true;
-
-    private Timer timer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,15 +70,14 @@ public class e_MessagesActivity extends Activity {
         new fetchAllMessages_Task()
                 .execute(globalState.my_user.getId(),
                         globalState.user_to_talk_to.getId());
-
-        timer = new Timer();
-        timer.schedule(new fetchNewMessagesTimerTask(), 10000, 10000);
+        Log.i("CHAT_INFO", "Connecting to server...");
+        connectToServer();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // No need to ask again for the messages if we already have a timer
+        // No need to ask again for the messages if we have a socket
     }
 
     @Override
@@ -102,31 +114,6 @@ public class e_MessagesActivity extends Activity {
         }
     }
 
-    private class fetchNewMessages_Task extends AsyncTask<Integer, Void, List<Message>> {
-
-        @Override
-        protected List<Message> doInBackground(Integer... userIds) {
-            Message message = adapter.getLastMessage();
-            if (message != null) {
-                return RPC.retrieveNewMessages(userIds[0], userIds[1], message);
-            } else {
-                return new ArrayList<>();
-            }
-        }
-
-        @Override
-        protected void onPostExecute(List<Message> new_messages) {
-            if (new_messages == null) {
-                toastShow("There's been an error downloading new messages");
-            } else {
-                if (new_messages.size() > 0) {
-                    toastShow(new_messages.size() + " new message/s downloaded");
-                    adapter.addMessages(new_messages);
-                    adapter.notifyDataSetChanged();
-                }
-            }
-        }
-    }
 
     public void sendText(final View view) {
 
@@ -165,14 +152,6 @@ public class e_MessagesActivity extends Activity {
             } else {
                 toastShow("There's been an error sending the message");
             }
-        }
-    }
-
-    private class fetchNewMessagesTimerTask extends TimerTask {
-        @Override
-        public void run() {
-            new fetchNewMessages_Task().execute(
-                    globalState.my_user.getId(), globalState.user_to_talk_to.getId());
         }
     }
 
@@ -242,6 +221,49 @@ public class e_MessagesActivity extends Activity {
                 }
             }
         });
+    }
+
+    private void connectToServer(){
+        try {
+            ClientManager client = ClientManager.createClient();
+            MyEndPoint me = new MyEndPoint();
+            client.connectToServer(me, ClientEndpointConfig.Builder.create().build(),
+                    URI.create(ENDPOINT));
+            Log.i("CHAT_INFO", "Connected to WServer");
+        }
+        catch (Exception e) {
+            Log.e("WebSocketService", e.toString());
+            toastShow("Error when connecting to push WebSocket");
+        }
+    }
+
+    public class MyEndPoint extends Endpoint {
+        @Override
+        public void onOpen(Session session, EndpointConfig EndpointConfig) {
+            Log.i("CHAT_INFO", "WS created");
+            session.addMessageHandler(new MessageHandler.Whole<String>() {
+                @Override
+                public void onMessage(String message) {
+                    Message msg = gson.fromJson(message, Message.class);
+                    if (msg.getUserSender().equals(globalState.user_to_talk_to)
+                            || msg.getUserReceiver().equals(globalState.user_to_talk_to)) {
+                        adapter.addMessage(msg);
+                        adapter.notifyDataSetChanged();
+                        toastShow("New message received!");
+                    }
+                }
+            });
+
+        }
+        @Override
+        public void onError(Session session, Throwable t) {
+            toastShow("Error in the web-socket.");
+            Log.i("CHAT_INFO", "Error in WS");
+        }
+        @Override
+        public void onClose(Session session, CloseReason closeReason) {
+            Log.i("CHAT_INFO", "WS closed");
+        }
     }
 
     private void toastShow(String text) {
